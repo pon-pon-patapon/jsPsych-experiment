@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>jsPsych Experiment</title>
+  <script src="https://unpkg.com/jspsych@7.3.1/dist/jspsych.js"></script>
+  <link href="https://unpkg.com/jspsych@7.3.1/css/jspsych.css" rel="stylesheet">
+  <script src="https://unpkg.com/jspsych@7.3.1/plugins/jspsych-html-button-response.js"></script>
+</head>
+<body>
+  <div id="jspsych-target"></div>
+
+  <script>
+    // 実験タイムライン
+    const timeline = [];
+
+    // 参加者IDを取得するプロンプト
+    const participant_id = prompt("Please enter your Participant ID:");
+
+    // 質問のスライド
+    const trial = {
+      type: 'html-button-response',
+      stimulus: '<p>How are you feeling today?</p>',
+      choices: ['Good', 'Okay', 'Bad']
+    };
+
+    timeline.push(trial);
+
+    // 実験終了時の処理
+    jsPsych.init({
+      timeline: timeline,
+      on_finish: function() {
+        // データをGoogle Sheetsに送信
+        const experiment_data = {
+          participantID: participant_id,
+          response: jsPsych.data.get().values()[0].response
+        };
+
+        fetch("https://script.google.com/macros/s/AKfycbyQwqo7LCRupyeTeuLXvsV_3XPHTFGgPeJFsw28jMBUQ-4mQ8lkkCfC2hXp8QnbFs80/exec", { // URLをここに貼り付け
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(experiment_data)
+        })
+        .then(response => {
+          if (response.ok) {
+            alert("Thank you for participating!");
+          } else {
+            alert("There was an error saving your data.");
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
